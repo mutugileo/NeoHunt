@@ -61,9 +61,11 @@ const elements = {
   registerTab: document.querySelector("#registerTab"),
   loginForm: document.querySelector("#loginForm"),
   registerForm: document.querySelector("#registerForm"),
+  updatePasswordForm: document.querySelector("#updatePasswordForm"),
   authMessage: document.querySelector("#authMessage"),
   loginEmail: document.querySelector("#loginEmail"),
   loginPassword: document.querySelector("#loginPassword"),
+  resetPasswordButton: document.querySelector("#resetPasswordButton"),
   registerName: document.querySelector("#registerName"),
   registerEmail: document.querySelector("#registerEmail"),
   registerPassword: document.querySelector("#registerPassword"),
@@ -71,6 +73,7 @@ const elements = {
   registerRegion: document.querySelector("#registerRegion"),
   registerKeywords: document.querySelector("#registerKeywords"),
   registerCompanies: document.querySelector("#registerCompanies"),
+  newPassword: document.querySelector("#newPassword"),
   refreshButton: document.querySelector("#refreshButton"),
   signOutButton: document.querySelector("#signOutButton"),
   preferencesForm: document.querySelector("#preferencesForm"),
@@ -332,7 +335,22 @@ function showAuth() {
   elements.appView.hidden = true;
   elements.refreshButton.hidden = true;
   elements.signOutButton.hidden = true;
+  elements.updatePasswordForm.hidden = true;
   elements.pageTitle.textContent = "Your Job Radar";
+}
+
+function showPasswordRecovery() {
+  elements.authView.hidden = false;
+  elements.appView.hidden = true;
+  elements.refreshButton.hidden = true;
+  elements.signOutButton.hidden = true;
+  elements.loginForm.hidden = true;
+  elements.registerForm.hidden = true;
+  elements.updatePasswordForm.hidden = false;
+  elements.loginTab.classList.remove("active");
+  elements.registerTab.classList.remove("active");
+  elements.pageTitle.textContent = "Reset Password";
+  elements.authMessage.textContent = "";
 }
 
 function renderList() {
@@ -462,6 +480,10 @@ async function bootHome() {
 
   const { data } = await getClient().auth.getSession();
   state.session = data.session;
+  if (state.session && isRecoveryFlow()) {
+    showPasswordRecovery();
+    return;
+  }
   if (!state.session) {
     showAuth();
     return;
@@ -597,9 +619,28 @@ function setAuthMode(mode) {
   const isRegister = mode === "register";
   elements.loginForm.hidden = isRegister;
   elements.registerForm.hidden = !isRegister;
+  elements.updatePasswordForm.hidden = true;
   elements.loginTab.classList.toggle("active", !isRegister);
   elements.registerTab.classList.toggle("active", isRegister);
   elements.authMessage.textContent = "";
+}
+
+function isRecoveryFlow() {
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  const search = new URLSearchParams(window.location.search);
+  return hash.get("type") === "recovery" || search.get("type") === "recovery";
+}
+
+function authErrorMessage(error) {
+  const code = error?.code || "";
+  const message = error?.message || "Authentication failed.";
+  if (code === "invalid_credentials" || message.toLowerCase().includes("invalid login credentials")) {
+    return "Those login details did not match a NeoHunt account. Register first if this is your first time, or send a password reset link.";
+  }
+  if (message.toLowerCase().includes("email not confirmed")) {
+    return "Check your email and confirm your account before logging in.";
+  }
+  return message;
 }
 
 function formPreferencesFromRegister(user) {
@@ -709,7 +750,29 @@ if (isDetailPage) {
       elements.authMessage.textContent = "";
       await loadListPage();
     } catch (error) {
-      elements.authMessage.textContent = error.message;
+      elements.authMessage.textContent = authErrorMessage(error);
+    }
+  });
+
+  elements.resetPasswordButton.addEventListener("click", async () => {
+    const email = elements.loginEmail.value.trim();
+    if (!email) {
+      elements.authMessage.textContent = "Enter your email first, then send the reset link.";
+      elements.loginEmail.focus();
+      return;
+    }
+
+    elements.authMessage.textContent = "Sending password reset link...";
+    try {
+      const { error } = await getClient().auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin,
+      });
+      if (error) {
+        throw error;
+      }
+      elements.authMessage.textContent = "Reset link sent. Check your email, then come back to set a new password.";
+    } catch (error) {
+      elements.authMessage.textContent = authErrorMessage(error);
     }
   });
 
@@ -749,7 +812,26 @@ if (isDetailPage) {
       elements.authMessage.textContent = "";
       await loadListPage();
     } catch (error) {
-      elements.authMessage.textContent = error.message;
+      elements.authMessage.textContent = authErrorMessage(error);
+    }
+  });
+
+  elements.updatePasswordForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    elements.authMessage.textContent = "Updating your password...";
+    try {
+      const { error } = await getClient().auth.updateUser({
+        password: elements.newPassword.value,
+      });
+      if (error) {
+        throw error;
+      }
+      window.history.replaceState({}, document.title, window.location.pathname);
+      elements.newPassword.value = "";
+      elements.authMessage.textContent = "Password updated. Loading your radar...";
+      await loadListPage();
+    } catch (error) {
+      elements.authMessage.textContent = authErrorMessage(error);
     }
   });
 

@@ -459,6 +459,20 @@ textarea:focus {
   width: 100%;
 }
 
+.text-action {
+  min-height: 34px;
+  border: 0;
+  background: transparent;
+  color: var(--accent-deep);
+  cursor: pointer;
+  font-weight: 800;
+  text-align: center;
+}
+
+.text-action:hover {
+  text-decoration: underline;
+}
+
 .primary-action:hover,
 .secondary-action:hover,
 .icon-button:hover {
