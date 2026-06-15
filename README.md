@@ -75,7 +75,7 @@ NEOHUNT_INGEST_TOKEN
 MIN_SCORE
 ```
 
-The scheduled workflow runs daily at 07:17 Kenya time and writes the latest scrape into Supabase.
+The scheduled workflow runs twice a day, at 06:00 and 14:00 Kenya time, and writes the latest scrape into Supabase.
 
 ## Tune Matching
 

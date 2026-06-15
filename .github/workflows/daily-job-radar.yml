@@ -2,8 +2,9 @@ name: NeoHunt Job Scraper
 
 on:
   schedule:
-    # 04:17 UTC = 07:17 Kenya time. Avoid :00 because scheduled workflows can be congested.
-    - cron: "17 4 * * *"
+    # 03:00 UTC = 06:00 Kenya time and 11:00 UTC = 14:00 Kenya time.
+    - cron: "0 3 * * *"
+    - cron: "0 11 * * *"
   workflow_dispatch:
 
 jobs:
@@ -12,10 +13,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 

@@ -92,6 +92,10 @@ h3 {
   align-items: start;
 }
 
+.workspace.single {
+  grid-template-columns: 1fr;
+}
+
 .feed,
 .details {
   min-height: calc(100svh - 164px);
@@ -245,6 +249,11 @@ select:focus {
   padding: 24px;
 }
 
+.workspace.single .details {
+  position: static;
+  min-height: auto;
+}
+
 .details-content {
   animation: settle 240ms ease both;
 }
@@ -280,6 +289,20 @@ select:focus {
 
 .detail-grid strong {
   font-size: 1.25rem;
+}
+
+.detail-grid-wide {
+  margin-top: 0;
+}
+
+.post-hero {
+  margin-bottom: 22px;
+}
+
+.job-post h1 {
+  font-size: clamp(2rem, 4vw, 4.2rem);
+  line-height: 0.95;
+  margin-bottom: 10px;
 }
 
 .analysis {
@@ -344,10 +367,14 @@ select:focus {
 }
 
 .icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 48px;
   background: var(--ink);
   color: white;
   font-size: 1.15rem;
+  text-decoration: none;
 }
 
 .empty-state,
