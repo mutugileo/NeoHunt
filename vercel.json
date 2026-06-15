@@ -1,18 +1,23 @@
 {
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "rewrites": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/",
-      "destination": "/web/index.html"
+      "src": "web/**/*",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "^/$",
+      "dest": "/web/index.html"
     },
     {
-      "source": "/job",
-      "destination": "/web/job.html"
+      "src": "^/job$",
+      "dest": "/web/job.html"
     },
     {
-      "source": "/(.*)",
-      "destination": "/web/$1"
+      "src": "^/(.*)$",
+      "dest": "/web/$1"
     }
   ]
 }
