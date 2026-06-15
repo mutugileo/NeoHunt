@@ -76,6 +76,8 @@ NEOHUNT_INGEST_TOKEN
 MIN_SCORE
 ```
 
+The workflow has PhaseTwo defaults for `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `NEOHUNT_INGEST_TOKEN`, so it can run before secrets are added. Repository secrets override those defaults when present.
+
 The scheduled workflow runs twice a day, at 06:00 and 14:00 Kenya time, and writes the latest scrape into Supabase.
 
 ## Tune Matching
