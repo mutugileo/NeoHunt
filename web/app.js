@@ -420,8 +420,8 @@ function renderListDetails(job) {
       </section>
     </div>
     <div class="actions">
-      <a class="primary-action" href="${escapeAttribute(buildJobPageUrl(job))}">Apply</a>
-      <a class="secondary-action" href="${escapeAttribute(job.job_url || job.source || "#")}" target="_blank" rel="noreferrer">Open Website</a>
+      <a class="primary-action" href="${escapeAttribute(job.job_url || job.source || "#")}" target="_blank" rel="noreferrer">Apply</a>
+      <a class="secondary-action" href="${escapeAttribute(buildJobPageUrl(job))}">View details</a>
       <button class="secondary-action" type="button" id="saveButton">${saved ? "Saved" : "Save"}</button>
     </div>
   `;
