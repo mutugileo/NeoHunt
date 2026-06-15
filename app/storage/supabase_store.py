@@ -50,6 +50,16 @@ class SupabaseJobStore:
             "Content-Type": "application/json",
         }
 
+    @staticmethod
+    def _raise_for_status(response: requests.Response) -> None:
+        try:
+            response.raise_for_status()
+        except requests.HTTPError as error:
+            message = response.text.strip()
+            if message:
+                raise requests.HTTPError(f"{error}. Response body: {message}", response=response) from error
+            raise
+
     def mode_label(self) -> str:
         if self.direct_write:
             return "service-role direct write"
@@ -75,7 +85,7 @@ class SupabaseJobStore:
                 json=companies,
                 timeout=60,
             )
-            response.raise_for_status()
+            self._raise_for_status(response)
             return len(companies)
 
         response = requests.post(
@@ -87,7 +97,7 @@ class SupabaseJobStore:
             },
             timeout=60,
         )
-        response.raise_for_status()
+        self._raise_for_status(response)
         return len(companies)
 
     def upsert_jobs(self, jobs: list[dict]) -> int:
@@ -132,7 +142,7 @@ class SupabaseJobStore:
                 json=jobs_payload,
                 timeout=60,
             )
-            response.raise_for_status()
+            self._raise_for_status(response)
 
             stored_jobs = response.json() if response.text else []
             if isinstance(stored_jobs, dict):
@@ -161,7 +171,7 @@ class SupabaseJobStore:
                         json=matches_payload,
                         timeout=60,
                     )
-                    match_response.raise_for_status()
+                    self._raise_for_status(match_response)
 
             return len(stored_jobs)
 
@@ -174,6 +184,6 @@ class SupabaseJobStore:
             },
             timeout=60,
         )
-        response.raise_for_status()
+        self._raise_for_status(response)
         data = response.json()
         return int(data.get("stored_jobs", 0))
