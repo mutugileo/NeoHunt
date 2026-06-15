@@ -8,6 +8,15 @@ import requests
 from app.config import CareerSource
 
 
+DEFAULT_SUPABASE_URL = "https://dqcpoxyadfsyfkvbgyen.supabase.co"
+DEFAULT_SUPABASE_ANON_KEY = (
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
+    "eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxY3BveHlhZGZzeWZrdmJneWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3NzY1MzYsImV4cCI6MjA2NjM1MjUzNn0."
+    "c8bV15lHma2TNBGzg9uzS0dcnhDojYXu7ITjm5BrfBY"
+)
+DEFAULT_NEOHUNT_INGEST_TOKEN = "285ea77f7adae12334074d346540d5b6437929178d990080"
+
+
 class SupabaseConfigError(RuntimeError):
     pass
 
@@ -21,11 +30,11 @@ class SupabaseJobStore:
 
     @classmethod
     def from_env(cls) -> "SupabaseJobStore":
-        url = os.getenv("SUPABASE_URL")
-        anon_key = os.getenv("SUPABASE_ANON_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
+        url = os.getenv("SUPABASE_URL") or DEFAULT_SUPABASE_URL
+        anon_key = os.getenv("SUPABASE_ANON_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY") or DEFAULT_SUPABASE_ANON_KEY
         service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SECRET_KEY")
-        ingest_token = os.getenv("NEOHUNT_INGEST_TOKEN")
-        api_key = anon_key or service_key
+        ingest_token = os.getenv("NEOHUNT_INGEST_TOKEN") or DEFAULT_NEOHUNT_INGEST_TOKEN
+        api_key = service_key or anon_key
         direct_write = bool(service_key)
 
         if not url or not api_key or (not ingest_token and not direct_write):
