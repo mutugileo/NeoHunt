@@ -109,10 +109,48 @@ h3 {
 }
 
 .auth-grid {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 0.8fr) minmax(420px, 0.58fr);
   gap: 24px;
   align-items: stretch;
+  min-height: calc(100svh - 150px);
+  overflow: hidden;
+  border-radius: 8px;
+  isolation: isolate;
+}
+
+.auth-grid::before {
+  content: "";
+  position: absolute;
+  inset: -5%;
+  z-index: -2;
+  background:
+    linear-gradient(rgba(4, 22, 15, 0.18), rgba(4, 22, 15, 0.18)),
+    url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1800&q=82") center / cover;
+  animation: authImageZoom 22s ease-in-out infinite alternate;
+  transform: scale(1);
+  will-change: transform;
+}
+
+.auth-grid::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(7, 30, 20, 0.82), rgba(7, 30, 20, 0.42) 48%, rgba(243, 245, 241, 0.72)),
+    linear-gradient(180deg, rgba(7, 30, 20, 0.18), rgba(7, 30, 20, 0.32));
+}
+
+@keyframes authImageZoom {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(1.12);
+  }
 }
 
 .auth-intro,
@@ -128,15 +166,27 @@ h3 {
 }
 
 .auth-intro {
-  min-height: calc(100svh - 150px);
   padding: clamp(24px, 5vw, 58px);
   display: flex;
   flex-direction: column;
   justify-content: center;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: white;
+}
+
+.auth-intro .eyebrow,
+.auth-intro .muted {
+  color: rgba(255, 255, 255, 0.82);
 }
 
 .auth-panel {
+  align-self: center;
+  margin-right: 18px;
   padding: 18px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(14px);
 }
 
 .auth-tabs {
@@ -529,10 +579,22 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 
+  .auth-grid {
+    gap: 0;
+  }
+
+  .auth-grid::after {
+    background: linear-gradient(180deg, rgba(7, 30, 20, 0.82), rgba(7, 30, 20, 0.48) 42%, rgba(243, 245, 241, 0.88));
+  }
+
   .auth-intro,
   .feed,
   .details {
     min-height: auto;
+  }
+
+  .auth-panel {
+    margin: 0;
   }
 
   .details {
@@ -572,5 +634,11 @@ textarea:focus {
     height: auto;
     border-radius: 999px;
     padding: 8px 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-grid::before {
+    animation: none;
   }
 }

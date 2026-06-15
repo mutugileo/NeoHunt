@@ -215,6 +215,34 @@ async function applyPendingPreferences(user) {
   return true;
 }
 
+async function registerConfirmedUser(values, email, password) {
+  const { data, error } = await getClient().functions.invoke("neohunt-register", {
+    body: {
+      email,
+      password,
+      full_name: values.full_name,
+    },
+  });
+
+  if (error) {
+    const errorBody = await error.context?.json?.().catch(() => null);
+    if (errorBody?.error) {
+      const registrationError = new Error(errorBody.error);
+      registrationError.code = errorBody.code || "registration_failed";
+      throw registrationError;
+    }
+    throw new Error(error.message || "Could not create your account.");
+  }
+
+  if (data?.error) {
+    const registrationError = new Error(data.error);
+    registrationError.code = data.code || "registration_failed";
+    throw registrationError;
+  }
+
+  return data?.user || null;
+}
+
 async function loadPreferences() {
   const user = state.session?.user;
   if (!user) {
@@ -634,6 +662,9 @@ function isRecoveryFlow() {
 function authErrorMessage(error) {
   const code = error?.code || "";
   const message = error?.message || "Authentication failed.";
+  if (code === "user_exists") {
+    return message;
+  }
   if (code === "invalid_credentials" || message.toLowerCase().includes("invalid login credentials")) {
     return "Those login details did not match a NeoHunt account. Register first if this is your first time, or send a password reset link.";
   }
@@ -789,24 +820,16 @@ if (isDetailPage) {
       const values = formPreferencesFromRegister(draftUser);
       validatePreferences(values);
 
-      const { data, error } = await getClient().auth.signUp({
+      await registerConfirmedUser(values, registerEmail, elements.registerPassword.value);
+
+      const { data, error } = await getClient().auth.signInWithPassword({
         email: registerEmail,
         password: elements.registerPassword.value,
-        options: {
-          emailRedirectTo: window.location.origin,
-          data: {
-            full_name: elements.registerName.value.trim(),
-          },
-        },
       });
       if (error) {
         throw error;
       }
-      if (!data.session) {
-        writePendingPreferences(registerEmail, values);
-        elements.authMessage.textContent = "Account created. Confirm your email, then login to open your radar.";
-        return;
-      }
+
       state.session = data.session;
       await savePreferences(values);
       elements.authMessage.textContent = "";
