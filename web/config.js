@@ -1,0 +1,4 @@
+window.NEOHUNT_CONFIG = {
+  supabaseUrl: "https://dqcpoxyadfsyfkvbgyen.supabase.co",
+  supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxY3BveHlhZGZzeWZrdmJneWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3NzY1MzYsImV4cCI6MjA2NjM1MjUzNn0.c8bV15lHma2TNBGzg9uzS0dcnhDojYXu7ITjm5BrfBY",
+};
