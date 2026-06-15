@@ -62,6 +62,7 @@ def run() -> None:
     load_dotenv()
     all_jobs: list[dict] = []
     store = SupabaseJobStore.from_env()
+    print(f"Supabase configured: {store.mode_label()}")
     store.upsert_companies(SOURCES)
 
     for source in SOURCES:

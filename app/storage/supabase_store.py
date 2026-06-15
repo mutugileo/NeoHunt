@@ -50,6 +50,11 @@ class SupabaseJobStore:
             "Content-Type": "application/json",
         }
 
+    def mode_label(self) -> str:
+        if self.direct_write:
+            return "service-role direct write"
+        return "anon key + ingest token RPC"
+
     def upsert_companies(self, sources: Iterable[CareerSource]) -> int:
         companies = [
             {

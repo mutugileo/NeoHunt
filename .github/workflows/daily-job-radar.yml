@@ -32,6 +32,11 @@ jobs:
           pip install -r requirements.txt
           python -m playwright install --with-deps chromium
 
+      - name: Show checked out commit
+        run: |
+          git rev-parse HEAD
+          sed -n '1,45p' app/storage/supabase_store.py
+
       - name: Run Job Radar
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
