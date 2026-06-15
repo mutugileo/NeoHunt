@@ -13,13 +13,14 @@ The email step has been removed. The scraper now writes roles into Supabase, sto
 
 ## Supabase Tables
 
-PhaseTwo now has three NeoHunt tables in `public`:
+PhaseTwo now has four NeoHunt tables in `public`:
 
 - `companies` stores each job source and career URL.
 - `jobs` stores scraped roles, score, status, and source URL.
 - `matches` stores the ranking explanation: strengths, gaps, CV angle, and decision.
+- `user_preferences` stores each signed-in user's country, region, keywords, and companies.
 
-RLS is enabled. `anon` and `authenticated` can read the tables, while writes go through the locked RPC that the Python scraper calls with an ingest token.
+RLS is enabled. `anon` and `authenticated` can read the public job tables, while writes go through the locked RPC that the Python scraper calls with an ingest token. `user_preferences` is only available to authenticated users, and each account can only read or update its own radar.
 
 ## Local Scraper Setup
 
@@ -62,7 +63,9 @@ Open:
 http://localhost:4173
 ```
 
-`web/config.js` contains the public Supabase URL and anon key for the read-only job feed. Keep service role keys out of this file.
+`web/config.js` contains the public Supabase URL and anon key for Supabase Auth and the job feed. Keep service role keys out of this file.
+
+The website now starts with login/register. During registration, users choose a country, region, keywords, and companies. After login, they can update the same radar from the home page; the feed only shows jobs matching that user's saved country or region, companies, and keywords.
 
 ## GitHub Actions
 

@@ -11,60 +11,160 @@
       <header class="topbar">
         <div>
           <p class="eyebrow">NeoHunt</p>
-          <h1>Today's Matches</h1>
+          <h1 id="pageTitle">Your Job Radar</h1>
         </div>
-        <button id="refreshButton" class="icon-button" type="button" aria-label="Refresh jobs" title="Refresh jobs">
-          <span aria-hidden="true">R</span>
-        </button>
+        <div class="topbar-actions">
+          <button id="refreshButton" class="icon-button" type="button" aria-label="Refresh jobs" title="Refresh jobs" hidden>
+            <span aria-hidden="true">R</span>
+          </button>
+          <button id="signOutButton" class="secondary-action compact" type="button" hidden>Sign out</button>
+        </div>
       </header>
 
-      <main class="workspace">
-        <section class="feed" aria-label="Job matches">
-          <div class="feed-tools">
-            <label class="search-wrap">
-              <span>Search</span>
-              <input id="searchInput" type="search" placeholder="Company, role, keyword">
-            </label>
-            <label class="select-wrap">
-              <span>Score</span>
-              <select id="scoreFilter">
-                <option value="0">All</option>
-                <option value="70">70%+</option>
-                <option value="85">85%+</option>
-                <option value="90">90%+</option>
-              </select>
-            </label>
+      <main>
+        <section id="authView" class="auth-grid">
+          <div class="auth-intro">
+            <p class="eyebrow">Personal radar</p>
+            <h2>Track the roles that fit your market.</h2>
+            <p class="muted">Create a profile with your country, region, companies, and keywords. NeoHunt will only show matches that belong to your saved radar.</p>
           </div>
 
-          <div class="summary-strip" aria-live="polite">
-            <div>
-              <strong id="matchCount">0</strong>
-              <span>matches</span>
+          <div class="auth-panel">
+            <div class="auth-tabs" role="tablist" aria-label="Authentication mode">
+              <button id="loginTab" class="auth-tab active" type="button">Login</button>
+              <button id="registerTab" class="auth-tab" type="button">Register</button>
             </div>
-            <div>
-              <strong id="topScore">0%</strong>
-              <span>top score</span>
-            </div>
-            <div>
-              <strong id="lastSync">Waiting</strong>
-              <span>last sync</span>
-            </div>
-          </div>
 
-          <div id="jobList" class="job-list"></div>
-          <p id="emptyState" class="empty-state" hidden>No matching jobs yet. Run the scraper and this board will fill up.</p>
+            <form id="loginForm" class="form-stack">
+              <label>
+                <span>Email</span>
+                <input id="loginEmail" type="email" autocomplete="email" required>
+              </label>
+              <label>
+                <span>Password</span>
+                <input id="loginPassword" type="password" autocomplete="current-password" required>
+              </label>
+              <button class="primary-action block" type="submit">Login</button>
+            </form>
+
+            <form id="registerForm" class="form-stack" hidden>
+              <label>
+                <span>Full name</span>
+                <input id="registerName" type="text" autocomplete="name" required>
+              </label>
+              <label>
+                <span>Email</span>
+                <input id="registerEmail" type="email" autocomplete="email" required>
+              </label>
+              <label>
+                <span>Password</span>
+                <input id="registerPassword" type="password" autocomplete="new-password" minlength="6" required>
+              </label>
+              <div class="form-grid">
+                <label>
+                  <span>Country</span>
+                  <select id="registerCountry" required></select>
+                </label>
+                <label>
+                  <span>Region or city</span>
+                  <input id="registerRegion" type="text" placeholder="Nairobi, Lagos, Remote">
+                </label>
+              </div>
+              <label>
+                <span>Keywords</span>
+                <textarea id="registerKeywords" rows="3" placeholder="product manager, payments, platform strategy" required></textarea>
+              </label>
+              <label>
+                <span>Companies</span>
+                <textarea id="registerCompanies" rows="3" placeholder="Visa, Mastercard, Microsoft, Amazon" required></textarea>
+              </label>
+              <button class="primary-action block" type="submit">Create account</button>
+            </form>
+
+            <p id="authMessage" class="form-message" aria-live="polite"></p>
+          </div>
         </section>
 
-        <aside class="details" aria-label="Selected job details">
-          <div id="detailsContent" class="details-content">
-            <p class="eyebrow">Select a role</p>
-            <h2>Pick a match to see the fit.</h2>
-            <p class="muted">Scores come from the ranking layer, then the details show strengths, gaps, and the CV angle to lead with.</p>
-          </div>
-        </aside>
+        <section id="appView" class="workspace" hidden>
+          <section class="feed" aria-label="Job matches">
+            <div class="preference-panel">
+              <div>
+                <p class="eyebrow">Your radar</p>
+                <h2 id="welcomeTitle">Welcome back</h2>
+              </div>
+              <form id="preferencesForm" class="preference-form">
+                <div class="form-grid three">
+                  <label>
+                    <span>Country</span>
+                    <select id="countryInput" required></select>
+                  </label>
+                  <label>
+                    <span>Region or city</span>
+                    <input id="regionInput" type="text" placeholder="Nairobi, Remote">
+                  </label>
+                  <label>
+                    <span>Minimum score</span>
+                    <select id="scoreFilter">
+                      <option value="0">All scores</option>
+                      <option value="70">70%+</option>
+                      <option value="85">85%+</option>
+                      <option value="90">90%+</option>
+                    </select>
+                  </label>
+                </div>
+                <label>
+                  <span>Keywords</span>
+                  <textarea id="keywordsInput" rows="3"></textarea>
+                </label>
+                <label>
+                  <span>Companies</span>
+                  <textarea id="companiesInput" rows="3"></textarea>
+                </label>
+                <div class="actions tight">
+                  <button class="primary-action" type="submit">Update radar</button>
+                  <span id="preferencesMessage" class="form-message" aria-live="polite"></span>
+                </div>
+              </form>
+            </div>
+
+            <div class="feed-tools">
+              <label class="search-wrap">
+                <span>Search within your matches</span>
+                <input id="searchInput" type="search" placeholder="Company, role, keyword">
+              </label>
+            </div>
+
+            <div class="summary-strip" aria-live="polite">
+              <div>
+                <strong id="matchCount">0</strong>
+                <span>matches</span>
+              </div>
+              <div>
+                <strong id="topScore">0%</strong>
+                <span>top score</span>
+              </div>
+              <div>
+                <strong id="lastSync">Waiting</strong>
+                <span>last sync</span>
+              </div>
+            </div>
+
+            <div id="jobList" class="job-list"></div>
+            <p id="emptyState" class="empty-state" hidden>No roles match this radar yet. Add broader keywords, another company, or a nearby region.</p>
+          </section>
+
+          <aside class="details" aria-label="Selected job details">
+            <div id="detailsContent" class="details-content">
+              <p class="eyebrow">Select a role</p>
+              <h2>Pick a match to see the fit.</h2>
+              <p class="muted">Your country, region, companies, and keywords shape what appears here.</p>
+            </div>
+          </aside>
+        </section>
       </main>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="./config.js"></script>
     <script src="./app.js"></script>
   </body>
