@@ -13,26 +13,31 @@ class SupabaseConfigError(RuntimeError):
 
 
 class SupabaseJobStore:
-    def __init__(self, url: str, anon_key: str, ingest_token: str) -> None:
+    def __init__(self, url: str, api_key: str, ingest_token: str | None, direct_write: bool) -> None:
         self.url = url.rstrip("/")
-        self.anon_key = anon_key
+        self.api_key = api_key
         self.ingest_token = ingest_token
+        self.direct_write = direct_write
 
     @classmethod
     def from_env(cls) -> "SupabaseJobStore":
         url = os.getenv("SUPABASE_URL")
         anon_key = os.getenv("SUPABASE_ANON_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
+        service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SECRET_KEY")
         ingest_token = os.getenv("NEOHUNT_INGEST_TOKEN")
-        if not url or not anon_key or not ingest_token:
+        api_key = anon_key or service_key
+        direct_write = bool(service_key)
+
+        if not url or not api_key or (not ingest_token and not direct_write):
             raise SupabaseConfigError(
-                "Set SUPABASE_URL, SUPABASE_ANON_KEY, and NEOHUNT_INGEST_TOKEN before running the scraper."
+                "Set SUPABASE_URL and either (SUPABASE_ANON_KEY + NEOHUNT_INGEST_TOKEN) or SUPABASE_SERVICE_ROLE_KEY before running the scraper."
             )
-        return cls(url, anon_key, ingest_token)
+        return cls(url, api_key, ingest_token, direct_write)
 
     def _headers(self) -> dict[str, str]:
         return {
-            "apikey": self.anon_key,
-            "Authorization": f"Bearer {self.anon_key}",
+            "apikey": self.api_key,
+            "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
 
@@ -45,6 +50,30 @@ class SupabaseJobStore:
             }
             for source in sources
         ]
+        if not companies:
+            return 0
+
+        if self.direct_write:
+            response = requests.post(
+                f"{self.url}/rest/v1/companies",
+                headers=self._headers(),
+                params={"on_conflict": "name"},
+                json=companies,
+                timeout=60,
+            )
+            response.raise_for_status()
+            return len(companies)
+
+        response = requests.post(
+            f"{self.url}/rest/v1/rpc/neohunt_ingest_snapshot",
+            headers=self._headers(),
+            json={
+                "payload": {"companies": companies, "jobs": []},
+                "ingest_token": self.ingest_token,
+            },
+            timeout=60,
+        )
+        response.raise_for_status()
         return len(companies)
 
     def upsert_jobs(self, jobs: list[dict]) -> int:
@@ -76,6 +105,51 @@ class SupabaseJobStore:
                 if job.get("url")
             ],
         }
+
+        if self.direct_write:
+            jobs_payload = payload["jobs"]
+            if not jobs_payload:
+                return 0
+
+            response = requests.post(
+                f"{self.url}/rest/v1/jobs",
+                headers={**self._headers(), "Prefer": "resolution=merge-duplicates,return=representation"},
+                params={"on_conflict": "job_url"},
+                json=jobs_payload,
+                timeout=60,
+            )
+            response.raise_for_status()
+
+            stored_jobs = response.json() if response.text else []
+            if isinstance(stored_jobs, dict):
+                stored_jobs = [stored_jobs]
+
+            if stored_jobs:
+                matches_payload = []
+                for stored_job in stored_jobs:
+                    source_job = next(
+                        (job for job in jobs if job.get("url") == stored_job.get("job_url")),
+                        None,
+                    )
+                    if source_job:
+                        matches_payload.append(
+                            {
+                                "job_id": stored_job["id"],
+                                **source_job["match"],
+                            }
+                        )
+
+                if matches_payload:
+                    match_response = requests.post(
+                        f"{self.url}/rest/v1/matches",
+                        headers={**self._headers(), "Prefer": "resolution=merge-duplicates,return=minimal"},
+                        params={"on_conflict": "job_id"},
+                        json=matches_payload,
+                        timeout=60,
+                    )
+                    match_response.raise_for_status()
+
+            return len(stored_jobs)
 
         response = requests.post(
             f"{self.url}/rest/v1/rpc/neohunt_ingest_snapshot",

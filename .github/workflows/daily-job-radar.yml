@@ -29,7 +29,8 @@ jobs:
       - name: Run Job Radar
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           NEOHUNT_INGEST_TOKEN: ${{ secrets.NEOHUNT_INGEST_TOKEN }}
           MIN_SCORE: ${{ secrets.MIN_SCORE }}
         run: python -m app.main

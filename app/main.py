@@ -62,6 +62,7 @@ def run() -> None:
     load_dotenv()
     all_jobs: list[dict] = []
     store = SupabaseJobStore.from_env()
+    store.upsert_companies(SOURCES)
 
     for source in SOURCES:
         print(f"Scraping {source.company}...")
